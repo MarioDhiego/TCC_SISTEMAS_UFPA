@@ -26,7 +26,7 @@
 ### Passo 2: Criação de Diretório de Trabalho: Computador + Github #############################
 ## Definir Diretorio de TrabalhO ###############################################################
 ## Definir Local
-setwd("C:/Users/mario Dhiego/Desktop/TCC_SISTEMAS_INFORMACAO_UFPA")
+setwd("C:/Users/usuario/Documents/TCC_SISTEMAS_UFPA")
 
 ## Testar Local
 getwd()
@@ -62,7 +62,7 @@ install.packages(c("tinytex","knitr","kableExtra","formattable", "htmltools", "r
 # Pacotes p/ Leitura de Base de Dados
 library(readr)
 library(readxl)
-
+library(openxlsx)
 
 # Pacotes p/ Maninulacao de Dados
 library(tidyverse)
@@ -78,10 +78,13 @@ library(stringr)
 # Pacotes p/ Representação Tabular
 library(DT)
 library(data.table)
+library(reactable)
+library(kableExtra)
 library(DescTools)
 library(devtools)
 library(rmarkdown)
 library(knitr)
+library(e1071)
 
 # Pacotes p/ Representação Gráfica 
 library(ggplot2)
@@ -104,7 +107,7 @@ library(knitr)
 library(kableExtra)
 library(formattable)
 library(htmltools)
-library(rmarkdown)
+#library(rmarkdown)
 ################################################################################################
 
 # Desativar Pacotes
@@ -116,11 +119,20 @@ detach("package:tidyverse", unload = TRUE)
 ## PASSO5: Fazer Leitura dos Microdados do ENADE ###############################################
 # OPÇÃO1: Leitura da Base de Dados em .txt
 
-Base_Completa=read.table("MICRODADOS_ENADE_2017.txt", 
+Base_Completa = read.table("MICRODADOS_ENADE_2017.txt", 
                          header=TRUE, 
                          sep=";", 
                          dec=",", 
                          colClasses=c(NT_OBJ_FG="numeric"))
+
+# Banco Geral
+MICRODADOS_ENADE_2017 <- read_csv("MICRODADOS_ENADE_2017.csv")
+MICRODADOS_ENADE_2017 <- read_csv2("MICRODADOS_ENADE_2017.txt")
+
+#  FOrmação Geral
+BANCO_ITENS_FG <- read_excel("BANCO_ITENS_FG.xlsx")
+BANCO_ITENS_CE <- read_excel("BANCO_ITENS_CE.xlsx")
+
 
 ################################################################################################
 
@@ -131,8 +143,6 @@ download.file(url = "https://github.com/MarioDhiego/ENADE_2018_RMarkdown/blob/ma
 
 datazip <- unzip("TCC_DIEGO/microdados_enade_2018.rar",
                  exdir="TCC_DIEGO")
-
-Dados <- read.table("TCC_DIEGO/microdados_enade_2018.txt")
 ################################################################################################
 
 ### Leia os Dados a partir do disco, sem carrega-los na RAM ####################################
@@ -158,7 +168,7 @@ install.packages('MonetDBLite', dependencies = TRUE)
 #####################################################################################################
 ### PASSO6: MANIPULAÇÃO DOS MICRODADOS/FAXINA #######################################################
 ### Filtrar as Variáveis SocioEconomicas ############################################################
-Base_Filtrada = Base_Completa %>% 
+Base_Filtrada = MICRODADOS_ENADE_2017 %>% 
   dplyr::select (CO_IES,
                  CO_CATEGAD,
                  CO_GRUPO,
@@ -255,10 +265,23 @@ dim(Base_Completa)
 dim(Base_Filtrada)
 
 # Resumo dos Dados com as Variaveis selecionadas
-Resumo=summary(Base_Filtrada)
+Resumo_Geral = summary(Base_Filtrada)
 Resumo
 
-Descritiva=describe(Base_Completa)
+# Resumo Curso de Sistemas
+Resumo_Sistemas = summary(SISTEMAS_20117)
+Resumo_Sistemas
+
+# Resumo Curso de Ciencia da Computação
+Resumo_Ciencias = summary(BANCO_ITENS_FG)
+Resumo_Ciencias
+
+
+# Resumo Curso de Engenharia da Computação
+Resumo_Engenharia = summary(Engenharia_Computacao)
+Resumo_Ciencias
+
+Descritiva = describe(BANCO_ITENS_FG)
 Descritiva
 ######################################################################################################
 
@@ -280,12 +303,11 @@ Base_Filtrada_PARA = subset(Base_Completa, Base_Completa$CO_UF_CURSO == 15);
 ######################################################################################################
 
 
-
 ### Selecionar um Curso ##############################################################################
 
 
 #Filtrando os Dados p/Sistema de Informação
-SISTEMAS= Base_Filtrada %>% filter(CO_GRUPO== 4006) 
+SISTEMAS_2017= Base_Filtrada %>% filter(CO_GRUPO== 4006) 
 
 #Filtrando os Dados p/Ciencia da Computação Bacharelado
 Ciencia_Computacao_Bach= Base_Filtrada %>% filter(CO_GRUPO== 4004)
@@ -293,18 +315,24 @@ Ciencia_Computacao_Bach= Base_Filtrada %>% filter(CO_GRUPO== 4004)
 #Filtrando os Dados p/Ciencia da Computação Licenciatura
 Ciencia_Computacao_Lice= Base_Filtrada %>% filter(CO_GRUPO== 4005)
 
+#Filtrando os Dados p/Ciencia da Computação Licenciatura
+Engenharia_Computacao= Base_Filtrada %>% filter(CO_GRUPO== 4003)
+
 ######################################################################################################
 
 
 #### Salvar as Novas Bases de Dados Limpa ############################################################
 
-write.csv(SISTEMAS, file= "microdados_enade_2017_Sistemas_Informacao.csv")
+write.csv(SISTEMAS_SEM_NA, file= "microdados_enade_2017_Sistemas_SEM_NAS.csv")
+
+
 write.csv(Ciencia_Computacao_Bach, file= "microdados_enade_2017_Ciencias_Computacao.csv")
 ######################################################################################################
 
 
 ####################### Transformar o Curso/SISTEMAS #################################################
-SISTEMAS = SISTEMAS %>% mutate(CURSO = case_when(CO_GRUPO == 4006 ~ "Sistemas de Informação"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(CURSO = case_when(CO_GRUPO == 4006 ~ "Sistemas de Informação"))
 
 COMPUTACAO_BACHARELADO = COMPUTACAO_BACHARELADO %>% mutate(CURSO=case_when(CO_GRUPO== 4004 ~ "Ciência da Computação Bacharelado"))
 
@@ -315,118 +343,130 @@ COMPUTACAO_LICENCIATURA = COMPUTACAO_LICENCIATURA %>% mutate(CURSO=case_when(CO_
 
 ######################################################################################################
 ### Transformar a Variavel: CO_REGIAO in REGIAO ######################################################
-SISTEMAS = SISTEMAS %>% mutate(REGIAO = case_when(CO_REGIAO_CURSO == 1 ~ "Norte",
-                                                  CO_REGIAO_CURSO == 2 ~ "Nordeste",
-                                                  CO_REGIAO_CURSO == 3 ~ "Sudeste",
-                                                  CO_REGIAO_CURSO == 4 ~ "Sul",
-                                                  CO_REGIAO_CURSO == 5 ~ "Centro-Oeste"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(REGIAO = case_when(CO_REGIAO_CURSO == 1 ~ "Norte",
+                            CO_REGIAO_CURSO == 2 ~ "Nordeste",
+                            CO_REGIAO_CURSO == 3 ~ "Sudeste",
+                            CO_REGIAO_CURSO == 4 ~ "Sul",
+                            CO_REGIAO_CURSO == 5 ~ "Centro-Oeste"))
 ######################################################################################################
 
 
 ######################################################################################################
 ### Transformar a Variavel: CO_TURNO_GRADUACAO in TURNO ##############################################
-SISTEMAS = SISTEMAS %>% mutate(TURNO = case_when(CO_TURNO_GRADUACAO == "1" ~ "Matutino",
-                                                 CO_TURNO_GRADUACAO == "2" ~ "Vespertino",
-                                                 CO_TURNO_GRADUACAO == "3" ~ "Integral",
-                                                 CO_TURNO_GRADUACAO == "4" ~ "Noturno"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(TURNO = case_when(CO_TURNO_GRADUACAO == "1" ~ "Matutino",
+                           CO_TURNO_GRADUACAO == "2" ~ "Vespertino",
+                           CO_TURNO_GRADUACAO == "3" ~ "Integral",
+                           CO_TURNO_GRADUACAO == "4" ~ "Noturno"))
 ######################################################################################################
 
 
 ### Transformar a Variável: CO_CATEGAD in Categoria da IES ###########################################
-SISTEMAS = SISTEMAS %>% mutate(CATEGORIA_IES = case_when(CO_CATEGAD == "1" ~ "Pública Federal",
-                                                         CO_CATEGAD == "2" ~ "Pública Estadual",
-                                                         CO_CATEGAD == "3" ~ "Pública Municipal",
-                                                         CO_CATEGAD == "4" ~ "Privada c/ Fins Lucrativos",
-                                                         CO_CATEGAD == "5" ~ "Privada s/ Fins Lucrativos"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(CATEGORIA_IES = case_when(CO_CATEGAD == "1" ~ "Pública Federal",
+                                   CO_CATEGAD == "2" ~ "Pública Estadual",
+                                   CO_CATEGAD == "3" ~ "Pública Municipal",
+                                   CO_CATEGAD == "4" ~ "Privada c/ Fins Lucrativos",
+                                   CO_CATEGAD == "5" ~ "Privada s/ Fins Lucrativos"))
 #######################################################################################################
 
 
 ### Transformar a Variavel: CO_MODALIDADE in MODALIDADE ################################################
-SISTEMAS = SISTEMAS %>% mutate(MODALIDADE = case_when(CO_MODALIDADE == "1" ~ "Presencial",
-                                                      CO_MODALIDADE == "0" ~ "EAD"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(MODALIDADE = case_when(CO_MODALIDADE == "1" ~ "Presencial",
+                                CO_MODALIDADE == "0" ~ "EAD"))
 ########################################################################################################
 
 
 ########################################################################################################
 ### Transformar a Variavel: TP_SEXO in SEXO ############################################################
-SISTEMAS = SISTEMAS %>% mutate(SEXO = case_when(TP_SEXO == "F" ~ "Feminino",
-                                                TP_SEXO == "M" ~ "Masculino"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(SEXO = case_when(TP_SEXO == "F" ~ "Feminino",
+                          TP_SEXO == "M" ~ "Masculino"))
 ########################################################################################################
 
 
 ########################################################################################################
 ### Transformar a Variavel: QE_I01 in ESTADO CIVIL #####################################################
-SISTEMAS = SISTEMAS %>% mutate(ESTADO_CIVIL = case_when(QE_I01 == "A" ~ "Solteiro",
-                                                        QE_I01 == "B" ~ "Casado",
-                                                        QE_I01 == "C" ~ "Separado/Divorciado",
-                                                        QE_I01 == "D" ~ "Viuvo",
-                                                        QE_I01 == "E" ~ "Outro"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(ESTADO_CIVIL = case_when(QE_I01 == "A" ~ "Solteiro",
+                                  QE_I01 == "B" ~ "Casado",
+                                  QE_I01 == "C" ~ "Separado/Divorciado",
+                                  QE_I01 == "D" ~ "Viuvo",
+                                  QE_I01 == "E" ~ "Outro"))
 ########################################################################################################
 
 
 ########################################################################################################
 ### Transformar a Variavel: QE_I02 in RACA #############################################################
-SISTEMAS = SISTEMAS %>% mutate(RACA = case_when(QE_I02 == "A" ~ "Branca",
-                                                QE_I02 == "B" ~ "Preta",
-                                                QE_I02 == "C" ~ "Amarela",
-                                                QE_I02 == "D" ~ "Indigena",
-                                                QE_I02 == "E" ~ "ND"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(RACA = case_when(QE_I02 == "A" ~ "Branca",
+                          QE_I02 == "B" ~ "Preta",
+                          QE_I02 == "C" ~ "Amarela",
+                          QE_I02 == "D" ~ "Indigena",
+                          QE_I02 == "E" ~ "ND"))
 ########################################################################################################
 
 
 ########################################################################################################
 ### Transformar a Variavel: QE_I06 in MORADIA ##########################################################
-SISTEMAS = SISTEMAS %>% mutate(MORADIA = case_when(QE_I06 == "A" ~ "Sozinho",
-                                                   QE_I06 == "B" ~ "Pais e/ou parentes",
-                                                   QE_I06 == "C" ~ "Cônjuge e/ou filhos",
-                                                   QE_I06 == "D" ~ "Outras pessoas",
-                                                   QE_I06 == "E" ~ "Alojamento universitário",
-                                                   QE_I06 == "F" ~ "Hospedaria ou outro"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(MORADIA = case_when(QE_I06 == "A" ~ "Sozinho",
+                             QE_I06 == "B" ~ "Pais e/ou parentes",
+                             QE_I06 == "C" ~ "Cônjuge e/ou filhos",
+                             QE_I06 == "D" ~ "Outras pessoas",
+                             QE_I06 == "E" ~ "Alojamento universitário",
+                             QE_I06 == "F" ~ "Hospedaria ou outro"))
 ########################################################################################################
 
 
 #########################################################################################################
 ### Transformar a Variavel: QE_I07 in Nº de Pessoas/Familiares  #########################################
-SISTEMAS = SISTEMAS %>% mutate(FAMILIARES = case_when(QE_I07 == "A" ~ "Nenhum",
-                                                      QE_I07 == "B" ~ "Um",
-                                                      QE_I07 == "C" ~ "Dois",
-                                                      QE_I07 == "D" ~ "Três",
-                                                      QE_I07 == "E" ~ "Quatro",
-                                                      QE_I07 == "F" ~ "Cinco",
-                                                      QE_I07 == "G" ~ "Seis",
-                                                      QE_I07 == "H" ~ "Sete ou +"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(FAMILIARES = case_when(QE_I07 == "A" ~ "Nenhum",
+                                QE_I07 == "B" ~ "Um",
+                                QE_I07 == "C" ~ "Dois",
+                                QE_I07 == "D" ~ "Três",
+                                QE_I07 == "E" ~ "Quatro",
+                                QE_I07 == "F" ~ "Cinco",
+                                QE_I07 == "G" ~ "Seis",
+                                QE_I07 == "H" ~ "Sete ou +"))
 #########################################################################################################
 
 
 ########################################################################################################
 ### Transformar a Variável: QE_I08 in Renda Familiar ###################################################
-SISTEMAS = SISTEMAS %>% mutate(RENDA = case_when(QE_I08 == "A" ~ "Até 1,5 S.M",
-                                                 QE_I08 == "B" ~ "1,5 a 3 S.M",
-                                                 QE_I08 == "C" ~ "3 a 4,5 S.M",
-                                                 QE_I08 == "D" ~ "4,5 a 6 S.M",
-                                                 QE_I08 == "E" ~ "6 a 10 S.M",
-                                                 QE_I08 == "F" ~ "10 a 30 S.M",
-                                                 QE_I08 == "G" ~ "Acima de 30 S.M"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(RENDA = case_when(QE_I08 == "A" ~ "Até 1,5 S.M",
+                           QE_I08 == "B" ~ "1,5 a 3 S.M",
+                           QE_I08 == "C" ~ "3 a 4,5 S.M",
+                           QE_I08 == "D" ~ "4,5 a 6 S.M",
+                           QE_I08 == "E" ~ "6 a 10 S.M",
+                           QE_I08 == "F" ~ "10 a 30 S.M",
+                           QE_I08 == "G" ~ "Acima de 30 S.M"))
 ########################################################################################################
 
 
 ########################################################################################################
 ### Transformar a Variável: QE_I10 in Trabalho #########################################################
-SISTEMAS = SISTEMAS %>% mutate(TRABALHO = case_when(QE_I10 == "A" ~ "Desempregado",
-                                                    QE_I10 == "B" ~ "Eventualmente",
-                                                    QE_I10 == "C" ~ "Até 20 hs",
-                                                    QE_I10 == "D" ~ "21 a 39 hs",
-                                                    QE_I10 == "E" ~ "40h ou +"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(TRABALHO = case_when(QE_I10 == "A" ~ "Desempregado",
+                              QE_I10 == "B" ~ "Eventualmente",
+                              QE_I10 == "C" ~ "Até 20 hs",
+                              QE_I10 == "D" ~ "21 a 39 hs",
+                              QE_I10 == "E" ~ "40h ou +"))
 ########################################################################################################
 
 
 ########################################################################################################
 ### Transformar a Variável: QE_I23 Horas de Estudo #####################################################
-SISTEMAS = SISTEMAS %>% mutate(HORAS_ESTUDO = case_when(QE_I23 == "A" ~ "Nenhuma",
-                                                        QE_I23 == "B" ~ "De  1 a 3 horas",
-                                                        QE_I23 == "C" ~ "De 4 a 7",
-                                                        QE_I23 == "D" ~ "De 8 a 12",
-                                                        QE_I23 == "E" ~ "Mais de 12"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(HORAS_ESTUDO = case_when(QE_I23 == "A" ~ "Nenhuma",
+                                  QE_I23 == "B" ~ "De  1 a 3 horas",
+                                  QE_I23 == "C" ~ "De 4 a 7",
+                                  QE_I23 == "D" ~ "De 8 a 12",
+                                  QE_I23 == "E" ~ "Mais de 12"))
 ########################################################################################################
 
 
@@ -436,47 +476,218 @@ SISTEMAS = SISTEMAS %>% mutate(HORAS_ESTUDO = case_when(QE_I23 == "A" ~ "Nenhuma
 # Faixa 2 = entre 26 e 30 anos
 # Faixa 3 = Acima de 30 anos
  
-SISTEMAS[,length(SISTEMAS)] = ifelse(SISTEMAS$NU_IDADE<=24,"Faixa1",
-                                     ifelse(SISTEMAS$NU_IDADE>=30,"Faixa3","Faixa2"))
-names(SISTEMAS)[length(SISTEMAS)] = "Faixa_Etaria" 
+SISTEMAS_2017[,length(SISTEMAS_2017)] = ifelse(SISTEMAS_2017$NU_IDADE<=24,"Faixa1",
+                                     ifelse(SISTEMAS_2017$NU_IDADE>=30,"Faixa3","Faixa2"))
+names(SISTEMAS_2017)[length(SISTEMAS_2017)] = "Faixa_Etaria" 
  
 ########################################################################################################
 ### Transformar a Variável: NU_IDADE Faixa-Etária  #####################################################
 
-SISTEMAS = SISTEMAS %>% mutate(FAIXA_ETARIA = case_when(Faixa_Etaria == "Faixa1" ~ "Até 24 Anos",
-                                                        Faixa_Etaria == "Faixa2" ~ "Entre 25 e 30 Anos",
-                                                        Faixa_Etaria == "Faixa3" ~ "Acima de 30 Anos"))
+SISTEMAS_2017 = SISTEMAS_2017 %>% 
+  mutate(FAIXA_ETARIA = case_when(Faixa_Etaria == "Faixa1" ~ "Até 24 Anos",
+                                  Faixa_Etaria == "Faixa2" ~ "Entre 25 e 30 Anos",
+                                  Faixa_Etaria == "Faixa3" ~ "Acima de 30 Anos"))
+########################################################################################################
+
+################## Removendo as Variaveis antigas ######################################################
+SISTEMAS_2017 = SISTEMAS_2017[,-c(2,3,5,8,9,10,12,13,14,15,16,17,18,40)]
+
+ED = summary(SISTEMAS_SEM_NA)
+ED
+#
+d=describe(SISTEMAS_SEM_NA)
+d
+
+
+########### Medidas Estatisticas ############
+
+#CAlculo do tamanho do vetor de Notas
+quantidade_de_notas_NORMAL_CE =length(SISTEMAS_2017$NT_OBJ_CE)
+quantidade_de_notas_NORMAL_FG =length(SISTEMAS_2017$NT_OBJ_FG)
+
+quantidade_de_notas_SEM_NA_CE =length(SISTEMAS_SEM_NA$NT_OBJ_CE)
+quantidade_de_notas_SEM_NA_FG =length(SISTEMAS_SEM_NA$NT_OBJ_FG)
+
+
+
+
+#Calculo da Media
+MEDIA = mean(SISTEMAS_2017$NT_OBJ_CE)
+MEDIA = mean(SISTEMAS_SEM_NA$NT_OBJ_CE)
+
+#Calculo da Mediana
+MEDIANA = median(SISTEMAS_2017$NT_OBJ_CE)
+MEDIANA = median(SISTEMAS_SEM_NA$NT_OBJ_CE)
+
+####### Calculo da Moda
+#Primeira etapa: Calcular as frequencias simples
+FREQUENCIA = table(SISTEMAS_20117$NT_OBJ_CE)
+FREQUENCIA = table(SISTEMAS_SEM_NA$NT_OBJ_CE)
+
+#Segunda etapa: Calcular o maximo das frequencias simples
+MAXIMO = max(FREQUENCIA)
+
+#Terceira etapa: Trazer os nomes que correspondem as observacoes das FREQUENCIA
+NOMES = names(FREQUENCIA)
+
+#Quarta etapa: Trazer os nomes que satisfazem a comparação logica
+MODA_TEXTO = NOMES[FREQUENCIA == MAXIMO]
+class(MODA_TEXTO)
+
+#Quinta etapa: Transformar de caractere em numero
+MODA_NUMERO = as.numeric(MODA_TEXTO)
+class(MODA_NUMERO)
+
+#Calculo da Variancia
+VARIANCIA = var(SISTEMAS_20117$NT_OBJ_CE)
+VARIANCIA = var(SISTEMAS_SEM_NA$NT_OBJ_CE)
+
+#Calculo da VariAncia
+DESVIO = sd(SISTEMAS_20117$NT_OBJ_CE)
+DESVIO = sd(SISTEMAS_SEM_NA$NT_OBJ_CE)
+
+#Calculo dO Coeficiente de Variação
+CV=sd(SISTEMAS_20117$NT_OBJ_CE)/mean(SISTEMAS_20117$NT_OBJ_CE)*100
+CV=sd(SISTEMAS_SEM_NA$NT_OBJ_CE)/mean(SISTEMAS_SEM_NA$NT_OBJ_CE)*100
+
+#Calculo da Assimetria:
+AS=skewness(SISTEMAS_20117$NT_OBJ_CE)
+AS=skewness(SISTEMAS_SEM_NA$NT_OBJ_CE)
+
+#Calculo do Coeficiente de Curtose da forma como o R calcula, comparada a da normal
+CURTOSE=kurtosis(SISTEMAS_20117$NT_OBJ_CE)
+CURTOSE=kurtosis(SISTEMAS_SEM_NA$NT_OBJ_CE)
+
+#Resumo das Estatisticas
+RESULTADO = c(MAXIMO,
+              MEDIA,
+              MEDIANA,
+              MODA_NUMERO,
+              VARIANCIA,
+              DESVIO,
+              CV,
+              AS,
+              CURTOSE)
+RESULTADO
 ########################################################################################################
 
 
 ### ANALISE DE OUTLIER'S/MISSING VALUES #######################################################
 ### Nota Agrupado/Classes: identificar possiveis dados faltantes (NAs) ########################
-SISTEMAS %>% 
+SISTEMAS_SEM_NA %>% 
+  select(NT_OBJ_CE) %>% 
+  group_by(NT_OBJ_CE) %>% 
+  summarise(total = n())
+
+#Contabilizando os Na´s
+resumo_nas= SISTEMAS_20117 %>%
+  select(everything()) %>%  
+  summarise_all(list(~sum(is.na(.))))
+
+#Removendo  Na´S De todas As variáveis que possuem NA
+SISTEMAS_SEM_NA = SISTEMAS_2017 %>% na.omit()
+
+#Verificando de foram retirados os NA´S
+resumo_nas = SISTEMAS_SEM_NA %>%
+  select(everything()) %>%  
+  summarise_all(list(~sum(is.na(.))))
+resumo_nas %>% kbl %>% kable_material_dark(full_width = F)
+
+# Nota Agrupado/Classes Sem os NA´S
+SISTEMAS_SEM_NA %>% 
   select(NT_OBJ_FG) %>% 
   group_by(NT_OBJ_FG) %>% 
   summarise(total = n())
+
+SISTEMA_sem_NA %>% 
+  select(NT_OBJ_FG) %>% 
+  summarise(  quantidade=n(),
+              media = mean(NT_OBJ_FG),
+              mediana = median(NT_OBJ_FG),
+              moda=Mode(NT_OBJ_FG),
+              cv=sd(NT_OBJ_FG)/media*100,
+              assimetria=skewness(NT_OBJ_FG),
+              curtose=kurtosis(NT_OBJ_FG)
+  ) %>% 
+  arrange(desc(mediana))  %>% 
+  kbl %>% 
+  kable_material_dark(full_width = F)
+
+####
+SISTEMA_sem_NA %>% 
+  select(NT_OBJ_CE) %>% 
+  group_by(NT_OBJ_CE) %>% 
+  summarise(total = n())
+
+SISTEMA_sem_NA %>% 
+  select(NT_OBJ_CE) %>% 
+  summarise(  quantidade=n(),
+              media = mean(NT_OBJ_CE),
+              mediana = median(NT_OBJ_CE),
+              moda=Mode(NT_OBJ_CE),
+              cv=sd(NT_OBJ_CE)/media*100,
+              assimetria=skewness(NT_OBJ_CE),
+              curtose=kurtosis(NT_OBJ_CE)
+  ) %>% 
+  arrange(desc(mediana))  %>% 
+  kbl %>% 
+  kable_material_dark(full_width = F)
+
+
+# Estatística Resumo
+summary(SISTEMAS_SEM_NA$NT_OBJ_CE)
+summary(SISTEMAS_SEM_NA$NT_OBJ_FG)
+
+
+
+
+# Histograma Notas Objetivas FG(formação Geral)
+g_hist_densidade1 = ggplot(SISTEMAS_20117,
+                          aes(x= NT_OBJ_FG)) + 
+  geom_histogram(color = "black",fill="blue",bins =50,aes(y=(..count..)/sum(..count..)))+
+  geom_density(col=2, aes(y = 27 * (..count..)/sum(..count..))) +
+  ggtitle("Formação Geral")+
+  xlab("Nota dos alunos de Sistemas") +
+  ylab("Frequência relativa")
+ggplotly(g_hist_densidade1)
+
+
+# Histograma Notas Objetivas CE(componente específico)
+g_hist_densidade2 = ggplot(MICRODADOS_SISTEMA_sem_NA,
+                          aes(x= NT_OBJ_CE)) + 
+  geom_histogram(color = "black",fill="blue",bins =50,aes(y=(..count..)/sum(..count..)))+
+  geom_density(col=2, aes(y = 27 * (..count..)/sum(..count..))) +
+  ggtitle("Componente Específico")+
+  xlab("Nota dos alunos de Sistemas") +
+  ylab("Frequência relativa")
+ggplotly(g_hist_densidade2)
+
+
+
 ################################################################################################
 
 ### Total Agrupado/Sexo: identificar possiveis dados faltantes (NAs) ###########################
 SISTEMAS %>% 
   select(SEXO) %>% 
   group_by(SEXO) %>% 
-  summarise(total = n())
+  summarise(total = n()) %>% 
+  arrange(-total)
 ################################################################################################
 
-### Total Agrupado/RegiÃ£o: identificar possiveis dados faltantes (NAs) #########################
+### Total Agrupado/Região: identificar possiveis dados faltantes (NAs) #########################
 SISTEMAS %>% 
   select(REGIAO) %>% 
   group_by(REGIAO) %>% 
-  summarise(total = n())
+  summarise(total = n())%>% 
+  arrange(-total)
 ################################################################################################
-
 
 ### Total Agrupado/Raça: identificar possiveis dados faltantes (NAs)
 SISTEMAS %>% 
   select(RACA) %>% 
   group_by(RACA) %>% 
-  summarise(total = n())
+  summarise(total = n()) %>% 
+  arrange(-total)
 #################################################################################################
 
 
@@ -484,12 +695,15 @@ SISTEMAS %>%
 SISTEMAS %>% 
   select(TURNO) %>% 
   group_by(TURNO) %>% 
-  summarise(total = n())
+  summarise(total = n()) %>% 
+  arrange(-total)
+
+
 ###################################################################################################
 
 
 ### Retirando os missing de todas variaveis
-SISTEMAS_SEM_NA = SISTEMAS %>% na.omit()
+SISTEMAS_SEM_NA = SISTEMAS_2017 %>% na.omit()
 ED_SEM_MISSING = summary(SISTEMAS_SEM_NA)
 ED_SEM_MISSING
 
@@ -506,7 +720,7 @@ Resumo_NAS
 ### Notas dos Alunos: (RAÇA)
 # Gráfico1 de Densidade de Alunos por Raças e Regiões
 dados = SISTEMAS_SEM_NA
-grafico_geom_density1=ggplot(dados,aes(NT_OBJ_FG,fill=RACA))+
+grafico_geom_density1=ggplot(dados,aes(NT_OBJ_FG,fill= ESTADO_CIVIL))+
   geom_density(alpha=0.6)+
   xlab("Notas")+
   ylab("Densidade")+
@@ -517,7 +731,7 @@ ggplotly(grafico_geom_density1)
 
 
 dados = SISTEMAS_SEM_NA
-grafico_histograma1 = ggplot(dados, aes(x=NT_GER,fill=RACA))+ 
+grafico_histograma1 = ggplot(dados, aes(x=NT_GER,fill=CATEGORIA_IES))+ 
   geom_histogram() +
   ggtitle("Histograma das Notas dos Alunos por Raças e Regiões-Frequência Simples")+
   xlab("Notas") +
@@ -526,7 +740,7 @@ grafico_histograma1 = ggplot(dados, aes(x=NT_GER,fill=RACA))+
 ggplotly(grafico_histograma1)
 
 
-dados=SISTEMAS
+dados= SISTEMAS_SEM_NA
 grafico_histograma2 = ggplot(dados, aes(x=NT_GER,fill=REGIAO)) + 
   geom_histogram() +
   ggtitle("Histograma das Notas dos Alunos por Regiões e Raças-Frequência Simples") +
@@ -536,7 +750,7 @@ grafico_histograma2 = ggplot(dados, aes(x=NT_GER,fill=REGIAO)) +
 ggplotly(grafico_histograma2)
 
 
-dados=SISTEMAS
+dados= SISTEMAS_SEM_NA
 grafico_histograma3 = ggplot(dados, aes(x=NT_GER,fill=TURNO)) + 
   geom_histogram() +
   ggtitle("Histograma das Notas dos Alunos por Turnos e Raças-Frequência Simples") +
@@ -546,7 +760,7 @@ grafico_histograma3 = ggplot(dados, aes(x=NT_GER,fill=TURNO)) +
 ggplotly(grafico_histograma3)
 
 
-dados=SISTEMAS
+dados= SISTEMAS_SEM_NA
 grafico_histograma4 = ggplot(dados, aes(x=NT_GER,fill=TURNO)) + 
   geom_histogram() +
   ggtitle("Histograma das Notas dos Alunos por Turnos-Frequência Simples") +
@@ -557,9 +771,32 @@ ggplotly(grafico_histograma4)
 
 
 
+dados = SISTEMAS_SEM_NA
+grafico_histograma5 = ggplot(dados, aes(x=NT_GER,fill=TURNO)) + 
+  geom_histogram() +
+  ggtitle("Histograma das Notas dos Alunos por Turnos-Frequência Simples") +
+  xlab("Notas") +
+  ylab("Frequência simples") +
+  facet_grid(~SEXO)
+ggplotly(grafico_histograma5)
 
+dados = SISTEMAS_SEM_NA
+grafico_histograma6 = ggplot(dados, aes(x=NT_GER,fill=REGIAO)) + 
+  geom_histogram() +
+  ggtitle("Histograma das Notas dos Alunos por Turnos-Frequência Simples") +
+  xlab("Notas") +
+  ylab("Frequência simples") +
+  facet_grid(~SEXO)
+ggplotly(grafico_histograma6)
 
-
+dados = SISTEMAS_SEM_NA
+grafico_histograma7 = ggplot(dados, aes(x=NT_GER,fill= ESTADO_CIVIL)) + 
+  geom_histogram() +
+  ggtitle("Histograma das Notas dos Alunos por Turnos-Frequência Simples") +
+  xlab("Notas") +
+  ylab("Frequência simples") +
+  facet_grid(~SEXO)
+ggplotly(grafico_histograma7)
 
 
 ################################################################################################
@@ -580,12 +817,11 @@ ggplotly(grafico_histograma4)
 install.packages(c("tinytex","knitr","kableExtra","formattable", "htmltools", "rmarkdown"))
 ################################################################################################
 
-
 ### Ativação dos Pacotes ########################################################################
 library(ltm)
 library(psych)
 library(irtoys)
-library(lordif)
+#library(lordif)
 library(FactoMineR)
 library(CTT)
 library(mirt)
@@ -597,14 +833,28 @@ library(d3heatmap)
 
 
 ### Teoria Clássica dos Testes/Pacote:ltm ########################################################
-descritiva <- descript(SISTEMAS_SEM_NA)
+
+# Nota Bruta Objetiva: Formação Geral
+table(SISTEMAS_SEM_NA$NT_OBJ_FG)
+
+table(BANCO_ITENS_FG$ITEM1)
+
+# Nota Bruta Objetiva: Componente Especifico
+table(SISTEMAS_SEM_NA$NT_OBJ_CE)
+
+
+# Frequência de Escores
+descritiva <- descript(BANCO_ITENS_FG)
+descritiva <- descript(BANCO_ITENS_CE)
+
+descritiva
 names(descritiva)
 lsat.desc
 plot(lsat.desc,type='b',includeFirstLast=TRUE)
 plot(lsat.desc,items=c(1:3),type="b",includeFirstLast=TRUE,pch=c('1','2','3'))
 
 # Coeficiente Alpha de Cronbach
-cronbach.alpha(SISTEMAS_SEM_NA)
+cronbach.alpha(BANCO_ITENS_FG)
 
 
 ### Análise-de-Fatores/Pacote: psych ############################################################
@@ -622,21 +872,14 @@ d3heatmap(cor(EMOCOES[ , 1:20], use="pair"),
           k_row = 3, k_col = 3)
 #################################################################################################
 
-
-
-
-
-
-
-
 #################################################################################################
 ### Passo 9: Analise via Teoria da Resposta Ao Item #############################################
 
 
 ### Estimação dos Modelos da TRI ################################################################
-mirt_1pl <- mirt(Base_Filtrada, 1, itemtype = "Rasch", se= TRUE, se.type = "BL")           # modelo Rasch
-mirt_2pl <- mirt(dados_cesupa, 1, itemtype = "2PL", se= TRUE, se.type = "BL", TOL = .001) # modelo 2pl
-mirt_3pl <- mirt(dados_cesupa, 1, itemtype = "3PL", se= TRUE, se.type = "BL", TOL = .001) # modelo 3pl
+mirt_1pl <- mirt(BANCO_ITENS_FG, 1, itemtype = "Rasch", se= TRUE, se.type = "BL")           # modelo Rasch
+mirt_2pl <- mirt(BANCO_ITENS_FG, 1, itemtype = "2PL", se= TRUE, se.type = "BL", TOL = .001) # modelo 2pl
+mirt_3pl <- mirt(BANCO_ITENS_FG, 1, itemtype = "3PL", se= TRUE, se.type = "BL", TOL = .001) # modelo 3pl
 #################################################################################################
 
 
@@ -697,8 +940,8 @@ plot(mirt_3pl, type = "infotrace")
 
 #Plot de Curvas Individuais
 #par(mfrow=c(2,2))
-itemplot(mirt_2pl, type = "infotrace", item = 1)
-itemplot(mirt_2pl, type = "infotrace", item = 2)
+itemplot(mirt_3pl, type = "infotrace", item = 1)
+itemplot(mirt_3pl, type = "infotrace", item = 2)
 ####################################################################################################
 
 
