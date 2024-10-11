@@ -132,7 +132,7 @@ MICRODADOS_ENADE_2017 <- read_csv2("MICRODADOS_ENADE_2017.txt")
 #  FOrmação Geral
 BANCO_ITENS_FG <- read_excel("BANCO_ITENS_FG.xlsx")
 BANCO_ITENS_CE <- read_excel("BANCO_ITENS_CE.xlsx")
-
+BANCO_ITENS_Geral <- read_excel("BANCO_ITENS_Geral.xlsx")
 
 ################################################################################################
 
@@ -153,7 +153,7 @@ datazip <- unzip("TCC_DIEGO/microdados_enade_2018.rar",
 library(ff)
 
 # Leitura dos Microdados
-ENADE_2018 <- read.csv.ffdf(file="microdados_enade_2018.txt", header=TRUE)
+ENADE_2018 <- read.csv.ffdf(file="microdados_enade_2017.txt", header=TRUE)
 #####################################################################################################
 
 
@@ -169,7 +169,7 @@ install.packages('MonetDBLite', dependencies = TRUE)
 ### PASSO6: MANIPULAÇÃO DOS MICRODADOS/FAXINA #######################################################
 ### Filtrar as Variáveis SocioEconomicas ############################################################
 Base_Filtrada = MICRODADOS_ENADE_2017 %>% 
-  dplyr::select (CO_IES,
+  dplyr::select(CO_IES,
                  CO_CATEGAD,
                  CO_GRUPO,
                  CO_CURSO,
@@ -233,7 +233,6 @@ Base_Filtrada = MICRODADOS_ENADE_2017 %>%
 # NT_OBJ_FG          : Nota Bruta/Prova Objetiva/Componente: Formação Geral;
 # NT_OBJ_CE          : Nota Bruta/Prova Objetiva/Componente: Componente Especifico;
 #####################################################################################################
-
 
 ### Classificação das Variaveis #####################################################################
 # NT_OBJ_FG          : Variavel Quantitativa Contínua 
@@ -305,7 +304,6 @@ Base_Filtrada_PARA = subset(Base_Completa, Base_Completa$CO_UF_CURSO == 15);
 
 ### Selecionar um Curso ##############################################################################
 
-
 #Filtrando os Dados p/Sistema de Informação
 SISTEMAS_2017= Base_Filtrada %>% filter(CO_GRUPO== 4006) 
 
@@ -324,25 +322,27 @@ Engenharia_Computacao= Base_Filtrada %>% filter(CO_GRUPO== 4003)
 #### Salvar as Novas Bases de Dados Limpa ############################################################
 
 write.csv(SISTEMAS_SEM_NA, file= "microdados_enade_2017_Sistemas_SEM_NAS.csv")
-
-
 write.csv(Ciencia_Computacao_Bach, file= "microdados_enade_2017_Ciencias_Computacao.csv")
 ######################################################################################################
 
 
 ####################### Transformar o Curso/SISTEMAS #################################################
+# Curso: Sistemas de Informação
 SISTEMAS_2017 = SISTEMAS_2017 %>% 
   mutate(CURSO = case_when(CO_GRUPO == 4006 ~ "Sistemas de Informação"))
 
-COMPUTACAO_BACHARELADO = COMPUTACAO_BACHARELADO %>% mutate(CURSO=case_when(CO_GRUPO== 4004 ~ "Ciência da Computação Bacharelado"))
+# Curso de Ciência da Computação Bacharelado
+COMPUTACAO_BACHARELADO = COMPUTACAO_BACHARELADO %>% 
+  mutate(CURSO=case_when(CO_GRUPO== 4004 ~ "Ciência da Computação Bacharelado"))
 
-
-COMPUTACAO_LICENCIATURA = COMPUTACAO_LICENCIATURA %>% mutate(CURSO=case_when(CO_GRUPO== 4005 ~ "Ciência da Computação Licenciatura"))
+# Curso de Ciência da Computação Licenciatura
+COMPUTACAO_LICENCIATURA = COMPUTACAO_LICENCIATURA %>% 
+  mutate(CURSO=case_when(CO_GRUPO== 4005 ~ "Ciência da Computação Licenciatura"))
 ######################################################################################################
-
 
 ######################################################################################################
 ### Transformar a Variavel: CO_REGIAO in REGIAO ######################################################
+# Variável: REGIÃO
 SISTEMAS_2017 = SISTEMAS_2017 %>% 
   mutate(REGIAO = case_when(CO_REGIAO_CURSO == 1 ~ "Norte",
                             CO_REGIAO_CURSO == 2 ~ "Nordeste",
@@ -351,9 +351,9 @@ SISTEMAS_2017 = SISTEMAS_2017 %>%
                             CO_REGIAO_CURSO == 5 ~ "Centro-Oeste"))
 ######################################################################################################
 
-
 ######################################################################################################
 ### Transformar a Variavel: CO_TURNO_GRADUACAO in TURNO ##############################################
+# Variável: Turno
 SISTEMAS_2017 = SISTEMAS_2017 %>% 
   mutate(TURNO = case_when(CO_TURNO_GRADUACAO == "1" ~ "Matutino",
                            CO_TURNO_GRADUACAO == "2" ~ "Vespertino",
@@ -361,8 +361,8 @@ SISTEMAS_2017 = SISTEMAS_2017 %>%
                            CO_TURNO_GRADUACAO == "4" ~ "Noturno"))
 ######################################################################################################
 
-
 ### Transformar a Variável: CO_CATEGAD in Categoria da IES ###########################################
+# Variável: Categoria da IES
 SISTEMAS_2017 = SISTEMAS_2017 %>% 
   mutate(CATEGORIA_IES = case_when(CO_CATEGAD == "1" ~ "Pública Federal",
                                    CO_CATEGAD == "2" ~ "Pública Estadual",
@@ -371,24 +371,24 @@ SISTEMAS_2017 = SISTEMAS_2017 %>%
                                    CO_CATEGAD == "5" ~ "Privada s/ Fins Lucrativos"))
 #######################################################################################################
 
-
 ### Transformar a Variavel: CO_MODALIDADE in MODALIDADE ################################################
+# Variável: Modalidade do Curso
 SISTEMAS_2017 = SISTEMAS_2017 %>% 
   mutate(MODALIDADE = case_when(CO_MODALIDADE == "1" ~ "Presencial",
                                 CO_MODALIDADE == "0" ~ "EAD"))
 ########################################################################################################
 
-
 ########################################################################################################
 ### Transformar a Variavel: TP_SEXO in SEXO ############################################################
+# Variável: Sexo
 SISTEMAS_2017 = SISTEMAS_2017 %>% 
   mutate(SEXO = case_when(TP_SEXO == "F" ~ "Feminino",
                           TP_SEXO == "M" ~ "Masculino"))
 ########################################################################################################
 
-
 ########################################################################################################
 ### Transformar a Variavel: QE_I01 in ESTADO CIVIL #####################################################
+# Variável Estado Civil
 SISTEMAS_2017 = SISTEMAS_2017 %>% 
   mutate(ESTADO_CIVIL = case_when(QE_I01 == "A" ~ "Solteiro",
                                   QE_I01 == "B" ~ "Casado",
@@ -397,11 +397,11 @@ SISTEMAS_2017 = SISTEMAS_2017 %>%
                                   QE_I01 == "E" ~ "Outro"))
 ########################################################################################################
 
-
 ########################################################################################################
 ### Transformar a Variavel: QE_I02 in RACA #############################################################
+# Variável: Raça/Cor
 SISTEMAS_2017 = SISTEMAS_2017 %>% 
-  mutate(RACA = case_when(QE_I02 == "A" ~ "Branca",
+  dplyr::mutate(RACA = case_when(QE_I02 == "A" ~ "Branca",
                           QE_I02 == "B" ~ "Preta",
                           QE_I02 == "C" ~ "Amarela",
                           QE_I02 == "D" ~ "Indigena",
@@ -412,7 +412,7 @@ SISTEMAS_2017 = SISTEMAS_2017 %>%
 ########################################################################################################
 ### Transformar a Variavel: QE_I06 in MORADIA ##########################################################
 SISTEMAS_2017 = SISTEMAS_2017 %>% 
-  mutate(MORADIA = case_when(QE_I06 == "A" ~ "Sozinho",
+  dplyr::mutate(MORADIA = case_when(QE_I06 == "A" ~ "Sozinho",
                              QE_I06 == "B" ~ "Pais e/ou parentes",
                              QE_I06 == "C" ~ "Cônjuge e/ou filhos",
                              QE_I06 == "D" ~ "Outras pessoas",
@@ -492,7 +492,7 @@ SISTEMAS_2017 = SISTEMAS_2017 %>%
 ################## Removendo as Variaveis antigas ######################################################
 SISTEMAS_2017 = SISTEMAS_2017[,-c(2,3,5,8,9,10,12,13,14,15,16,17,18,40)]
 
-ED = summary(SISTEMAS_SEM_NA)
+ED = summary(BANCO_ITENS_Geral)
 ED
 #
 d=describe(SISTEMAS_SEM_NA)
@@ -580,7 +580,7 @@ SISTEMAS_SEM_NA %>%
   summarise(total = n())
 
 #Contabilizando os Na´s
-resumo_nas= SISTEMAS_20117 %>%
+resumo_nas = SISTEMAS_2017 %>%
   select(everything()) %>%  
   summarise_all(list(~sum(is.na(.))))
 
@@ -599,7 +599,7 @@ SISTEMAS_SEM_NA %>%
   group_by(NT_OBJ_FG) %>% 
   summarise(total = n())
 
-SISTEMA_sem_NA %>% 
+SISTEMAS_SEM_NA %>% 
   select(NT_OBJ_FG) %>% 
   summarise(  quantidade=n(),
               media = mean(NT_OBJ_FG),
@@ -614,12 +614,12 @@ SISTEMA_sem_NA %>%
   kable_material_dark(full_width = F)
 
 ####
-SISTEMA_sem_NA %>% 
+SISTEMAS_SEM_NA %>% 
   select(NT_OBJ_CE) %>% 
   group_by(NT_OBJ_CE) %>% 
   summarise(total = n())
 
-SISTEMA_sem_NA %>% 
+SISTEMAS_SEM_NA %>% 
   select(NT_OBJ_CE) %>% 
   summarise(  quantidade=n(),
               media = mean(NT_OBJ_CE),
@@ -642,7 +642,7 @@ summary(SISTEMAS_SEM_NA$NT_OBJ_FG)
 
 
 # Histograma Notas Objetivas FG(formação Geral)
-g_hist_densidade1 = ggplot(SISTEMAS_20117,
+g_hist_densidade1 = ggplot(SISTEMAS_2017,
                           aes(x= NT_OBJ_FG)) + 
   geom_histogram(color = "black",fill="blue",bins =50,aes(y=(..count..)/sum(..count..)))+
   geom_density(col=2, aes(y = 27 * (..count..)/sum(..count..))) +
@@ -653,7 +653,7 @@ ggplotly(g_hist_densidade1)
 
 
 # Histograma Notas Objetivas CE(componente específico)
-g_hist_densidade2 = ggplot(MICRODADOS_SISTEMA_sem_NA,
+g_hist_densidade2 = ggplot(SISTEMAS_SEM_NA,
                           aes(x= NT_OBJ_CE)) + 
   geom_histogram(color = "black",fill="blue",bins =50,aes(y=(..count..)/sum(..count..)))+
   geom_density(col=2, aes(y = 27 * (..count..)/sum(..count..))) +
@@ -667,7 +667,7 @@ ggplotly(g_hist_densidade2)
 ################################################################################################
 
 ### Total Agrupado/Sexo: identificar possiveis dados faltantes (NAs) ###########################
-SISTEMAS %>% 
+SISTEMAS_SEM_NA %>% 
   select(SEXO) %>% 
   group_by(SEXO) %>% 
   summarise(total = n()) %>% 
@@ -675,7 +675,7 @@ SISTEMAS %>%
 ################################################################################################
 
 ### Total Agrupado/Região: identificar possiveis dados faltantes (NAs) #########################
-SISTEMAS %>% 
+SISTEMAS_SEM_NA %>% 
   select(REGIAO) %>% 
   group_by(REGIAO) %>% 
   summarise(total = n())%>% 
@@ -683,7 +683,7 @@ SISTEMAS %>%
 ################################################################################################
 
 ### Total Agrupado/Raça: identificar possiveis dados faltantes (NAs)
-SISTEMAS %>% 
+SISTEMAS_SEM_NA %>% 
   select(RACA) %>% 
   group_by(RACA) %>% 
   summarise(total = n()) %>% 
@@ -692,7 +692,7 @@ SISTEMAS %>%
 
 
 ### Total agrupado/Turno: identificar possiveis dados faltantes (NAs) ############################
-SISTEMAS %>% 
+SISTEMAS_SEM_NA %>% 
   select(TURNO) %>% 
   group_by(TURNO) %>% 
   summarise(total = n()) %>% 
@@ -720,11 +720,11 @@ Resumo_NAS
 ### Notas dos Alunos: (RAÇA)
 # Gráfico1 de Densidade de Alunos por Raças e Regiões
 dados = SISTEMAS_SEM_NA
-grafico_geom_density1=ggplot(dados,aes(NT_OBJ_FG,fill= ESTADO_CIVIL))+
+grafico_geom_density1 = ggplot(dados,aes(NT_OBJ_FG,fill= ESTADO_CIVIL))+
   geom_density(alpha=0.6)+
   xlab("Notas")+
   ylab("Densidade")+
-  ggtitle("Grafico de Densidade das Notas dos Alunos por Raças e Regioes")+
+  ggtitle("Densidade das Notas dos Alunos por Raças e Regioes")+
   facet_grid(~REGIAO)
 ggplotly(grafico_geom_density1)
 ################################################################################################
@@ -733,8 +733,8 @@ ggplotly(grafico_geom_density1)
 dados = SISTEMAS_SEM_NA
 grafico_histograma1 = ggplot(dados, aes(x=NT_GER,fill=CATEGORIA_IES))+ 
   geom_histogram() +
-  ggtitle("Histograma das Notas dos Alunos por Raças e Regiões-Frequência Simples")+
-  xlab("Notas") +
+  ggtitle("Notas dos Alunos por Raças/Regiões")+
+  xlab("Nota Bruta Geral") +
   ylab("Frequência simples") +
   facet_grid(~REGIAO)
 ggplotly(grafico_histograma1)
@@ -743,8 +743,8 @@ ggplotly(grafico_histograma1)
 dados= SISTEMAS_SEM_NA
 grafico_histograma2 = ggplot(dados, aes(x=NT_GER,fill=REGIAO)) + 
   geom_histogram() +
-  ggtitle("Histograma das Notas dos Alunos por Regiões e Raças-Frequência Simples") +
-  xlab("Notas") +
+  ggtitle("Notas dos Alunos por Regiões/Raças") +
+  xlab("Nota Bruta Geral") +
   ylab("Frequência Simples") +
   facet_grid(~RACA)
 ggplotly(grafico_histograma2)
@@ -753,8 +753,8 @@ ggplotly(grafico_histograma2)
 dados= SISTEMAS_SEM_NA
 grafico_histograma3 = ggplot(dados, aes(x=NT_GER,fill=TURNO)) + 
   geom_histogram() +
-  ggtitle("Histograma das Notas dos Alunos por Turnos e Raças-Frequência Simples") +
-  xlab("Notas") +
+  ggtitle("Notas dos Alunos por Turnos e Raças-Frequência Simples") +
+  xlab("Nota Bruta Geral") +
   ylab("Frequência simples") +
   facet_grid(~RACA)
 ggplotly(grafico_histograma3)
@@ -763,54 +763,46 @@ ggplotly(grafico_histograma3)
 dados= SISTEMAS_SEM_NA
 grafico_histograma4 = ggplot(dados, aes(x=NT_GER,fill=TURNO)) + 
   geom_histogram() +
-  ggtitle("Histograma das Notas dos Alunos por Turnos-Frequência Simples") +
-  xlab("Notas") +
+  ggtitle("Notas dos Alunos por Turnos-Frequência Simples") +
+  xlab("Nota Bruta Geral") +
   ylab("Frequência simples") +
   facet_grid(~REGIAO)
 ggplotly(grafico_histograma4)
 
 
-
 dados = SISTEMAS_SEM_NA
 grafico_histograma5 = ggplot(dados, aes(x=NT_GER,fill=TURNO)) + 
   geom_histogram() +
-  ggtitle("Histograma das Notas dos Alunos por Turnos-Frequência Simples") +
-  xlab("Notas") +
+  ggtitle("Notas dos Alunos por Turnos-Frequência Simples") +
+  xlab("Nota Bruta Geral") +
   ylab("Frequência simples") +
   facet_grid(~SEXO)
 ggplotly(grafico_histograma5)
 
+
 dados = SISTEMAS_SEM_NA
 grafico_histograma6 = ggplot(dados, aes(x=NT_GER,fill=REGIAO)) + 
   geom_histogram() +
-  ggtitle("Histograma das Notas dos Alunos por Turnos-Frequência Simples") +
-  xlab("Notas") +
+  ggtitle("Notas dos Alunos por Turnos-Frequência Simples") +
+  xlab("Nota Bruta Geral") +
   ylab("Frequência simples") +
   facet_grid(~SEXO)
 ggplotly(grafico_histograma6)
 
+
 dados = SISTEMAS_SEM_NA
 grafico_histograma7 = ggplot(dados, aes(x=NT_GER,fill= ESTADO_CIVIL)) + 
   geom_histogram() +
-  ggtitle("Histograma das Notas dos Alunos por Turnos-Frequência Simples") +
-  xlab("Notas") +
+  ggtitle("Notas dos Alunos por Turnos-Frequência Simples") +
+  xlab("Nota Bruta Geral") +
   ylab("Frequência simples") +
   facet_grid(~SEXO)
 ggplotly(grafico_histograma7)
-
-
 ################################################################################################
-
-
-
-
-
-
 
 
 #################################################################################################
 ### Passo 8: Analise via Teoria Classica dos Testes #############################################
-
 
 
 ### Instalação dos Pacotes ######################################################################
@@ -825,9 +817,13 @@ library(irtoys)
 library(FactoMineR)
 library(CTT)
 library(mirt)
+library(lattice)
+library(latticeExtra)
+library(RColorBrewer)
 library(lavaan)
 library(KernSmoothIRT)
 library(d3heatmap)
+library(WrightMap) # pacote utilizado para criar o Diagrama de Wright
 ##################################################################################################
 
 
@@ -846,28 +842,78 @@ table(SISTEMAS_SEM_NA$NT_OBJ_CE)
 # Frequência de Escores
 descritiva <- descript(BANCO_ITENS_FG)
 descritiva <- descript(BANCO_ITENS_CE)
-
+descritiva <- descript(BANCO_ITENS_Geral)
 descritiva
-names(descritiva)
+
+# Resumo Estatístico
+notas1 = rowSums(BANCO_ITENS_FG)
+notas2 = rowSums(BANCO_ITENS_CE)
+notas3 = rowSums(BANCO_ITENS_Geral)
+
+summary(notas1)
+summary(notas2)
+summary(notas3)
+
+table(notas3)
+table(notas2)
+table(notas1)
+
+
+boxplot(notas1, 
+        notas2, 
+        notas3, 
+        names = c("FG(8)" ,
+                  "CE(26)" ,
+                  "Total(34)"
+                  ), 
+        main="", 
+        xlab="Nº de Escores(acertos)", 
+        ylab="Componente da Prova Enade/2017", 
+        col= "blue", 
+        horizontal= TRUE, 
+        add = TRUE)
+
+
+
+# Formação Geral
+lsat.desc <- descript(BANCO_ITENS_FG)
+names(lsat.desc)
 lsat.desc
 plot(lsat.desc,type='b',includeFirstLast=TRUE)
-plot(lsat.desc,items=c(1:3),type="b",includeFirstLast=TRUE,pch=c('1','2','3'))
+plot(lsat.desc,items=c(1:8),type="b",includeFirstLast=TRUE,
+     pch=c('1','2','3','4','5','6','7','8'))
+
+# Componente Específico
+lsat.desc <- descript(BANCO_ITENS_CE)
+names(lsat.desc)
+lsat.desc
+plot(lsat.desc,type='b',includeFirstLast=TRUE)
+plot(lsat.desc,items=c(9:26),type="b",includeFirstLast=TRUE,
+     pch=c('9','10','11','12','13',
+           '15','16','17','18','19',
+           '20','21','22','23','24',
+           '25','26'))
+# Todos Itens
+lsat.desc <- descript(BANCO_ITENS_Geral)
+names(lsat.desc)
+lsat.desc
 
 # Coeficiente Alpha de Cronbach
 cronbach.alpha(BANCO_ITENS_FG)
-
+cronbach.alpha(BANCO_ITENS_CE)
+cronbach.alpha(BANCO_ITENS_Geral)
 
 ### Análise-de-Fatores/Pacote: psych ############################################################
 cortest.bartlett(SISTEMAS_SEM_NA, n = NULL, diag=TRUE) 
-KMO(SISTEMAS_SEM_NA)
+KMO(BANCO_ITENS_Geral)
 irt.fa(SISTEMAS_SEM_NA)
 fa.parallel(SISTEMAS_SEM_NA)
 #################################################################################################
 
 
 ### Mapa-de-Correlações/Pacote:d3heatmap ########################################################
-d3heatmap(EMOCOES, scale = "column", colors = "Blues")
-d3heatmap(cor(EMOCOES[ , 1:20], use="pair"), 
+d3heatmap(SISTEMAS_SEM_NA, scale = "column", colors = "Blues")
+d3heatmap(cor(ISTEMAS_SEM_NA[ , 1:8], use="pair"), 
           symn= TRUE,  symm = TRUE, 
           k_row = 3, k_col = 3)
 #################################################################################################
@@ -877,9 +923,26 @@ d3heatmap(cor(EMOCOES[ , 1:20], use="pair"),
 
 
 ### Estimação dos Modelos da TRI ################################################################
-mirt_1pl <- mirt(BANCO_ITENS_FG, 1, itemtype = "Rasch", se= TRUE, se.type = "BL")           # modelo Rasch
-mirt_2pl <- mirt(BANCO_ITENS_FG, 1, itemtype = "2PL", se= TRUE, se.type = "BL", TOL = .001) # modelo 2pl
-mirt_3pl <- mirt(BANCO_ITENS_FG, 1, itemtype = "3PL", se= TRUE, se.type = "BL", TOL = .001) # modelo 3pl
+
+# Modelo Rasch
+mirt_1pl <- mirt(BANCO_ITENS_Geral, 1, 
+                 itemtype = "Rasch", 
+                 se= TRUE, 
+                 se.type = "BL")           
+# Modelo 2pl
+mirt_2pl <- mirt(BANCO_ITENS_Geral, 1, 
+                 itemtype = "2PL", 
+                 se = TRUE, 
+                 se.type = "BL", 
+                 TOL = .001) 
+# Modelo 3pl
+mirt_3pl <- mirt(BANCO_ITENS_Geral, 
+                 1, 
+                 itemtype = "3PL", 
+                 se = TRUE, 
+                 se.type="BL",
+                 #method = "EM",
+                 TOL = .001) 
 #################################################################################################
 
 
@@ -892,9 +955,24 @@ coef(mirt_3pl, simplify = TRUE)
 
 #(Parametrização: a e b  da TRI)
 coef(mirt_1pl, IRTpars = TRUE, simplify = TRUE) 
-coef(mirt_2pl, IRTpars = TRUE, simplify = TRUE) 
+coef(mirt_2pl, IRTpars = TRUE, simplify = TRUE)
 coef(mirt_3pl, IRTpars = TRUE, simplify = TRUE)
+
+modelo_coef <- coef(mirt_3pl, simplify = TRUE, IRTpars = TRUE)
+
+# Acelerar o Processamento
+mirtCluster()
 #################################################################################################
+
+
+# Habilidades
+fscores(mirt_1pl)
+fscores(mirt_2pl)
+escore_total <- fscores(mirt_3pl)
+hist(fscores(mirt_1pl))
+hist(fscores(mirt_2pl))
+hist(fscores(mirt_3pl))
+
 
 
 ### Comparar Modelos: Teste de Razão de Verossimilhança #########################################
@@ -926,9 +1004,39 @@ summary(mirt_3pl)
 
 ### Curvas caracaterísticas dos itens ###########################################################
 #Curva Característica do Item
-plot(mirt_1pl, type = "trace")
-plot(mirt_2pl, type = "trace")
-plot(mirt_3pl, type = "trace")
+
+# Curva Característica do Teste
+plot(mirt_3pl)
+
+# Curva de Informação do Teste
+plot(mirt_3pl, type ="info")
+plot(mirt_3pl, type ="infoSE")
+plot(mirt_3pl, type ="SE")
+plot(mirt_3pl, type ="itemscore")
+
+
+# Curva Característica dos Itens
+plot(mirt_3pl, type ="trace")
+
+# Curva de Inofrmação do Item
+plot(mirt_3pl, type ="infotrace")
+
+# Curva dos 8 Itens FG
+plot(mirt_3pl,
+     type = "infotrace", 
+     facet_items = TRUE, 
+     which.items = 1:8)
+
+# Curva dos 26 Itens CE
+plot(mirt_3pl, 
+     type = "trace", 
+     facet_items = TRUE, 
+     which.items = 9:34)
+
+
+plot(mirt_3pl,
+     type = "infotrace", 
+     which.items = 9:34)
 ##################################################################################################
 
 #Curva de informação do Item
@@ -940,20 +1048,60 @@ plot(mirt_3pl, type = "infotrace")
 
 #Plot de Curvas Individuais
 #par(mfrow=c(2,2))
-itemplot(mirt_3pl, type = "infotrace", item = 1)
-itemplot(mirt_3pl, type = "infotrace", item = 2)
+itemplot(mirt_3pl, 
+         type = "infotrace", 
+         item = 10)
+
+itemplot(mirt_3pl, 
+         type = "infotrace", 
+         item = 25)
 ####################################################################################################
 
 
+d3heatmap(BANCO_ITENS_Geral, 
+          scale = "column", 
+          colors = "Blues")
+d3heatmap(cor(BANCO_ITENS_Geral[ , 1:20], use="pair"), 
+          symn= TRUE,  symm = TRUE, 
+          k_row = 3, k_col = 3)
 
-####################################################################################################
 
 
+#----------------------------------------------------
+# Calculando o escore de cada um dos(as) Estudantes 
+# ---------------------------------------------------
+
+prof <- as.vector(fscores(mirt_3pl))
+prof_padronizada <- (prof*50)+250
+
+# -----------------------------------
+# Visualizando o Diagrama de Wright -
+# -----------------------------------
+
+wrightMap(prof, modelo_coef$items[, 2])
+
+plot(mirt_3pl, type='trace', 
+     which.item = c(10, 29), 
+     facet_items=T, 
+     as.table = TRUE, auto.key=list(points=F, 
+                                    lines=T, 
+                                    columns=4, 
+                                    space = 'top', cex = .8), 
+     theta_lim = c(-3, 3), 
+     main = "")
 
 
+# -----------------------------------
+# Escore total bruto e proficiência -
+# -----------------------------------
 
+plot(prof, 
+     escore_total, 
+     title("Relação entre quantificação de acertos e proficiência"),
+     xlab = "Proficiência",
+     ylab = "Escore total bruto")
 
-
+cor(prof_padronizada, escore_total, method = "pearson")
 
 
 
