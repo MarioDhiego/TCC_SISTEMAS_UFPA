@@ -26,7 +26,7 @@
 ### Passo 2: Criação de Diretório de Trabalho: Computador + Github #############################
 ## Definir Diretorio de TrabalhO ###############################################################
 ## Definir Local
-setwd("C:/Users/mario.valente/Documents/Github2/TCC_SISTEMAS_UFPA-main")
+setwd("C:/Users/usuario/Documents/TCC_SISTEMAS_UFPA")
 
 ## Testar Local
 getwd()
@@ -140,6 +140,7 @@ df_enade <- read_csv2("MICRODADOS_ENADE_2017.txt")
 BANCO_ITENS_FG <- read_excel("BANCO_ITENS_FG.xlsx")
 BANCO_ITENS_CE <- read_excel("BANCO_ITENS_CE.xlsx")
 BANCO_ITENS_Geral <- read_excel("BANCO_ITENS_Geral.xlsx")
+BANCO_ITENS_letra <- read_excel("BANCO_ITENS_REPOSTA.xlsx")
 BANCO_ITENS_Geral_Sem <- read_excel("BANCO_ITENS_Geral_Sem_Itens.xlsx")
 
 
@@ -437,7 +438,7 @@ SISTEMAS_2017 = SISTEMAS_2017 %>%
 #########################################################################################################
 ### Transformar a Variavel: QE_I07 in Nº de Pessoas/Familiares  #########################################
 SISTEMAS_2017 = SISTEMAS_2017 %>% 
-  mutate(FAMILIARES = case_when(QE_I07 == "A" ~ "Nenhum",
+  dplyr::mutate(FAMILIARES = case_when(QE_I07 == "A" ~ "Nenhum",
                                 QE_I07 == "B" ~ "Um",
                                 QE_I07 == "C" ~ "Dois",
                                 QE_I07 == "D" ~ "Três",
@@ -450,8 +451,8 @@ SISTEMAS_2017 = SISTEMAS_2017 %>%
 
 ########################################################################################################
 ### Transformar a Variável: QE_I08 in Renda Familiar ###################################################
-SISTEMAS_2017 = SISTEMAS_2017 %>% 
-  mutate(RENDA = case_when(QE_I08 == "A" ~ "Até 1,5 S.M",
+SISTEMAS_2017 = SISTEMAS_2017 %>%
+  dplyr::mutate(RENDA = case_when(QE_I08 == "A" ~ "Até 1,5 S.M",
                            QE_I08 == "B" ~ "1,5 a 3 S.M",
                            QE_I08 == "C" ~ "3 a 4,5 S.M",
                            QE_I08 == "D" ~ "4,5 a 6 S.M",
@@ -464,7 +465,7 @@ SISTEMAS_2017 = SISTEMAS_2017 %>%
 ########################################################################################################
 ### Transformar a Variável: QE_I10 in Trabalho #########################################################
 SISTEMAS_2017 = SISTEMAS_2017 %>% 
-  mutate(TRABALHO = case_when(QE_I10 == "A" ~ "Desempregado",
+  dplyr::mutate(TRABALHO = case_when(QE_I10 == "A" ~ "Desempregado",
                               QE_I10 == "B" ~ "Eventualmente",
                               QE_I10 == "C" ~ "Até 20 hs",
                               QE_I10 == "D" ~ "21 a 39 hs",
@@ -475,7 +476,7 @@ SISTEMAS_2017 = SISTEMAS_2017 %>%
 ########################################################################################################
 ### Transformar a Variável: QE_I23 Horas de Estudo #####################################################
 SISTEMAS_2017 = SISTEMAS_2017 %>% 
-  mutate(HORAS_ESTUDO = case_when(QE_I23 == "A" ~ "Nenhuma",
+  dplyr::mutate(HORAS_ESTUDO = case_when(QE_I23 == "A" ~ "Nenhuma",
                                   QE_I23 == "B" ~ "De  1 a 3 horas",
                                   QE_I23 == "C" ~ "De 4 a 7",
                                   QE_I23 == "D" ~ "De 8 a 12",
@@ -497,7 +498,7 @@ names(SISTEMAS_2017)[length(SISTEMAS_2017)] = "Faixa_Etaria"
 ### Transformar a Variável: NU_IDADE Faixa-Etária  #####################################################
 
 SISTEMAS_2017 = SISTEMAS_2017 %>% 
-  mutate(FAIXA_ETARIA = case_when(Faixa_Etaria == "Faixa1" ~ "Até 24 Anos",
+  dplyr::mutate(FAIXA_ETARIA = case_when(Faixa_Etaria == "Faixa1" ~ "Até 24 Anos",
                                   Faixa_Etaria == "Faixa2" ~ "Entre 25 e 30 Anos",
                                   Faixa_Etaria == "Faixa3" ~ "Acima de 30 Anos"))
 ########################################################################################################
@@ -650,7 +651,6 @@ SISTEMAS_SEM_NA %>%
 # Estatística Resumo
 summary(SISTEMAS_SEM_NA$NT_GER)
 summary(SISTEMAS_SEM_NA$NT_OBJ_FG)
-
 
 
 
@@ -871,6 +871,7 @@ grid.arrange(nota1, nota2, nota3)
 
 
 # Matriz de correlação 
+
 library(PerformanceAnalytics)
 
 notas <- df_enade_SEM_NA %>%
@@ -907,7 +908,6 @@ install.packages(c("tinytex","knitr","kableExtra","formattable", "htmltools", "r
 library(ltm)
 library(psych)
 library(irtoys)
-library(lordif)
 library(FactoMineR)
 library(CTT)
 library(mirt)
@@ -976,18 +976,35 @@ names(lsat.desc)
 lsat.desc
 plot(lsat.desc,type='b',includeFirstLast=TRUE)
 plot(lsat.desc,items=c(1:8),type="b",includeFirstLast=TRUE,
+     main = "Proporção de Acertos por escore
+Itens 1 a 8",
+     xlab("Escore"),
+     ylab("Proporção de Acertos"),
      pch=c('1','2','3','4','5','6','7','8'))
 
 # Componente Específico
 lsat.desc <- descript(BANCO_ITENS_CE)
 names(lsat.desc)
 lsat.desc
+
 plot(lsat.desc,type='b',includeFirstLast=TRUE)
-plot(lsat.desc,items=c(9:26),type="b",includeFirstLast=TRUE,
+plot(lsat.desc,items=c(9:19),type="b",includeFirstLast=TRUE,
+     main = "Proporção de Acertos por escore
+Itens 9 A 19",
+     xlab("Escore"),
+     ylab("Proporção de Acertos"),
      pch=c('9','10','11','12','13',
-           '15','16','17','18','19',
-           '20','21','22','23','24',
-           '25','26'))
+           '15','16','17','18','19'))
+
+plot(lsat.desc,type='b',includeFirstLast=TRUE)
+plot(lsat.desc,items=c(20:30),type="b",includeFirstLast=TRUE,
+     main = "Proporção de Acertos por escore
+Itens 20 A 30",
+     xlab("Escore"),
+     ylab("Proporção de Acertos"),
+     pch=c('20','21','22','23','24',
+           '24','25','26','27','28'))
+
 # Todos Itens
 lsat.desc <- descript(BANCO_ITENS_Geral)
 names(lsat.desc)
@@ -1020,18 +1037,19 @@ d3heatmap(cor(BANCO_ITENS_Geral[ , 1:8], use="pair"),
 ### Estimação dos Modelos da TRI ################################################################
 
 # Modelo Rasch
-mirt_1pl <- mirt(BANCO_ITENS_Geral_Sem, 1, 
+mirt_1pl <- mirt(BANCO_ITENS_Geral, 1, 
                  itemtype = "Rasch", 
                  se= TRUE, 
                  se.type = "BL")           
 # Modelo 2pl
-mirt_2pl <- mirt(BANCO_ITENS_Geral_Sem, 1, 
+mirt_2pl <- mirt(BANCO_ITENS_Geral, 1, 
                  itemtype = "2PL", 
                  se = TRUE, 
                  se.type = "BL", 
                  TOL = .001) 
 # Modelo 3pl
-mirt_3pl <- mirt(BANCO_ITENS_Geral_Sem, 
+Exc = c(10)
+mirt_3pl <- mirt(BANCO_ITENS_Geral[,-Exc], 
                  1, 
                  itemtype = "3PL", 
                  se = TRUE, 
@@ -1061,8 +1079,20 @@ mirtCluster()
 
 
 # Habilidades
-fscores(mirt_1pl)
-fscores(mirt_2pl)
+theta1 <- fscores(mirt_3pl)
+hist(theta1,
+     col= "blue")
+
+ggplot(data.frame(theta1), aes(x = theta1)) +
+  geom_histogram(fill = "blue", 
+                 color = "black", 
+                 bins = 30) +
+  labs(title = "Distribuição de Theta1", 
+       x = "Proficiência", 
+       y = "Frequência") +
+  theme_minimal()
+
+
 escore_total <- fscores(mirt_3pl)
 hist(fscores(mirt_1pl))
 hist(fscores(mirt_2pl))
@@ -1104,6 +1134,7 @@ summary(mirt_3pl)
 plot(mirt_3pl)
 
 # Curva de Informação do Teste
+
 plot(mirt_3pl, type ="info")
 plot(mirt_3pl, type ="infoSE")
 plot(mirt_3pl, type ="SE")
@@ -1150,6 +1181,62 @@ itemplot(mirt_3pl,
 itemplot(mirt_3pl, 
          type = "infotrace", 
          item = 25)
+
+ITEM1 <- itemfit(mirt_3pl,
+                 empirical.plot = 1,
+                 Theta = theta1
+                 )
+
+ITEM2 <- itemfit(mirt_3pl,
+                 empirical.plot = 2,
+                 Theta = theta1
+                 )
+
+ITEM3 <- itemfit(mirt_3pl,
+                 empirical.plot = 3,
+                 Theta = theta1
+                 )
+
+ITEM10 <- itemfit(mirt_3pl,
+                 empirical.plot = 10,
+                 Theta = theta1
+)
+
+
+
+ITEM25 <- itemfit(mirt_3pl,
+                  empirical.plot = 25,
+                  Theta = theta1
+)
+
+
+ITEM29 <- itemfit(mirt_3pl,
+                  empirical.plot = 29,
+                  Theta = theta1
+)
+
+
+grid.arrange(ITEM1, ITEM2, ITEM3, ITEM10)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ####################################################################################################
 
 
